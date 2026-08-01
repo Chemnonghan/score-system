@@ -209,7 +209,7 @@ button#submitBtn:active { transform: translateY(0); }
   width: 0%;
   border-radius: 4px;
   background: linear-gradient(90deg, var(--primary), var(--accent));
-  transition: width 0.8s ease;
+  transition: width 0.4s ease;
 }
 
 .summary-box {
