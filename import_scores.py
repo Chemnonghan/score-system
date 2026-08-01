@@ -52,12 +52,14 @@ def import_scores(path, sheet_name=None, replace=False):
         cur.execute("DELETE FROM students")
         cur.execute("DELETE FROM subjects")
 
-    # upsert subjects
+    # upsert subjects (just registers the subject name; the max score for
+    # this particular import is stored per score entry below, so two classes
+    # using the same subject name with different max scores never clash)
     subject_ids = {}
     for name in subject_names:
         cur.execute(
             "INSERT INTO subjects(name, full_score) VALUES (?, ?) "
-            "ON CONFLICT(name) DO UPDATE SET full_score=excluded.full_score",
+            "ON CONFLICT(name) DO NOTHING",
             (name, full_scores[name]),
         )
         cur.execute("SELECT id FROM subjects WHERE name=?", (name,))
@@ -102,9 +104,10 @@ def import_scores(path, sheet_name=None, replace=False):
             except (TypeError, ValueError):
                 continue
             cur.execute(
-                "INSERT INTO scores(student_id, subject_id, score) VALUES (?, ?, ?) "
-                "ON CONFLICT(student_id, subject_id) DO UPDATE SET score=excluded.score",
-                (student_id, subject_ids[name], score),
+                "INSERT INTO scores(student_id, subject_id, score, full_score) VALUES (?, ?, ?, ?) "
+                "ON CONFLICT(student_id, subject_id) DO UPDATE SET "
+                "score=excluded.score, full_score=excluded.full_score",
+                (student_id, subject_ids[name], score, full_scores[name]),
             )
         imported += 1
 

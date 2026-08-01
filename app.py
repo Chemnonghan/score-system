@@ -74,7 +74,7 @@ def api_search():
 
     score_rows = conn.execute(
         """
-        SELECT sub.name AS subject, sub.full_score AS full_score, sc.score AS score
+        SELECT sub.name AS subject, sc.full_score AS full_score, sc.score AS score
         FROM scores sc
         JOIN subjects sub ON sub.id = sc.subject_id
         WHERE sc.student_id = ?
