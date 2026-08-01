@@ -2,10 +2,11 @@ const searchScreen = document.getElementById('searchScreen');
 const loadingScreen = document.getElementById('loadingScreen');
 const resultScreen = document.getElementById('resultScreen');
 const classSelect = document.getElementById('classSelect');
-const numberInput = document.getElementById('numberInput');
+const queryInput = document.getElementById('queryInput');
 const searchForm = document.getElementById('searchForm');
 const errorMsg = document.getElementById('errorMsg');
 const loadingText = document.getElementById('loadingText');
+const matchList = document.getElementById('matchList');
 
 const ENCOURAGEMENTS = [
   { min: 90, emoji: '🏆', texts: [
@@ -65,31 +66,48 @@ function randomDigits(len) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+function isNumeric(str) {
+  return /^\d+$/.test(str.trim());
+}
+
+async function runSearch(class_name, query) {
+  const params = new URLSearchParams({ class_name });
+  if (isNumeric(query)) {
+    params.set('number', query.trim());
+  } else {
+    params.set('name', query.trim());
+  }
+  const res = await fetch(`/api/search?${params.toString()}`);
+  const data = await res.json();
+  return data;
+}
+
 searchForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorMsg.textContent = '';
+  matchList.innerHTML = '';
   const class_name = classSelect.value;
-  const number = numberInput.value;
-  if (!class_name || !number) {
-    errorMsg.textContent = 'กรุณาเลือกชั้นเรียนและกรอกเลขที่ให้ครบถ้วน';
+  const query = queryInput.value.trim();
+  if (!class_name || !query) {
+    errorMsg.textContent = 'กรุณาเลือกชั้นเรียนและกรอกเลขที่หรือชื่อ-สกุลให้ครบถ้วน';
     return;
   }
 
   showScreen(loadingScreen);
-  const loadingMessages = ['กำลังค้นหาข้อมูล...', 'กำลังตรวจคะแนน...', 'ใกล้เสร็จแล้ว...'];
+  const loadingMessages = ['กำลังค้นหาข้อมูล...', 'กำลังตรวจคะแนน...', 'เตรียมเปิดผลสอบ...', 'ใกล้เสร็จแล้ว...'];
   let li = 0;
   const loadingInterval = setInterval(() => {
     li = (li + 1) % loadingMessages.length;
     loadingText.textContent = loadingMessages[li];
-  }, 600);
+  }, 550);
 
   let data;
   try {
-    const [res] = await Promise.all([
-      fetch(`/api/search?class_name=${encodeURIComponent(class_name)}&number=${encodeURIComponent(number)}`),
-      sleep(1200),
+    const [result] = await Promise.all([
+      runSearch(class_name, query),
+      sleep(1800),
     ]);
-    data = await res.json();
+    data = result;
   } catch (err) {
     clearInterval(loadingInterval);
     showScreen(searchScreen);
@@ -97,6 +115,13 @@ searchForm.addEventListener('submit', async (e) => {
     return;
   }
   clearInterval(loadingInterval);
+
+  if (data.multiple) {
+    showScreen(searchScreen);
+    errorMsg.textContent = data.message || 'พบชื่อที่คล้ายกันหลายคน';
+    renderMatchList(data.matches, class_name);
+    return;
+  }
 
   if (!data.found) {
     showScreen(searchScreen);
@@ -107,9 +132,26 @@ searchForm.addEventListener('submit', async (e) => {
   await renderResult(data);
 });
 
+function renderMatchList(matches, class_name) {
+  matchList.innerHTML = '';
+  matches.forEach(m => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'match-item';
+    btn.textContent = `เลขที่ ${m.number} — ${m.full_name}`;
+    btn.addEventListener('click', () => {
+      queryInput.value = String(m.number);
+      matchList.innerHTML = '';
+      errorMsg.textContent = '';
+      searchForm.requestSubmit();
+    });
+    matchList.appendChild(btn);
+  });
+}
+
 document.getElementById('backBtn').addEventListener('click', () => {
   showScreen(searchScreen);
-  numberInput.value = '';
+  queryInput.value = '';
 });
 
 async function renderResult(data) {
@@ -123,6 +165,11 @@ async function renderResult(data) {
   document.getElementById('totalScore').textContent = '0';
   document.getElementById('totalFull').textContent = data.summary.total_full;
   document.getElementById('totalPercent').textContent = '';
+
+  const twistOverlay = document.getElementById('twistOverlay');
+  const summaryContent = document.getElementById('summaryContent');
+  twistOverlay.classList.remove('show', 'twist-fake', 'twist-reveal');
+  summaryContent.classList.remove('show');
 
   showScreen(resultScreen);
 
@@ -140,43 +187,85 @@ async function renderResult(data) {
     rows.push(row);
   });
 
-  // slot-machine reveal, one subject at a time
+  // slot-machine reveal, one subject at a time — slow, decelerating spin for maximum suspense
   for (let i = 0; i < data.subjects.length; i++) {
     const s = data.subjects[i];
     const scoreEl = rows[i].querySelector('.subject-score');
     const barEl = rows[i].querySelector('.subject-bar');
     const digitLen = String(Math.round(s.full_score)).length;
 
-    const spinDuration = 700;
-    const spinStep = 45;
+    const spinDuration = 1900; // long suspenseful spin per subject
     const startTime = Date.now();
     await new Promise(resolve => {
-      const timer = setInterval(() => {
+      function frame() {
+        const elapsed = Date.now() - startTime;
         scoreEl.textContent = randomDigits(digitLen);
-        if (Date.now() - startTime > spinDuration) {
-          clearInterval(timer);
+        if (elapsed > spinDuration) {
           resolve();
+          return;
         }
-      }, spinStep);
+        // ease-out: spin fast at first, slow dramatically toward the end
+        const progress = elapsed / spinDuration;
+        const delay = 40 + Math.pow(progress, 3) * 260;
+        setTimeout(frame, delay);
+      }
+      frame();
     });
 
     scoreEl.textContent = formatScore(s.score);
     scoreEl.classList.remove('rolling');
+    scoreEl.classList.add('pop');
     barEl.style.width = `${Math.min(100, (s.score / s.full_score) * 100)}%`;
-    await sleep(180);
+    await sleep(450);
   }
 
-  // total score count-up
-  await countUp(document.getElementById('totalScore'), data.summary.total_score, 900);
-  document.getElementById('totalPercent').textContent = `${data.summary.percent}%`;
+  await sleep(400);
+  await revealTotalWithTwist(data.summary);
 
-  spawnConfetti(data.summary.percent >= 60 ? 60 : 25);
+  spawnConfetti(data.summary.percent >= 60 ? 70 : 25);
 
   const enc = pickEncouragement(data.summary.percent);
   document.getElementById('encourageEmoji').textContent = enc.emoji;
   document.getElementById('encourageText').textContent = enc.text;
   await sleep(200);
   document.getElementById('encourageBox').classList.add('show');
+}
+
+// dramatic "plot twist" before showing the real total: build suspense with a
+// wobbly fake number first, then flash and reveal the true total.
+async function revealTotalWithTwist(summary) {
+  const twistOverlay = document.getElementById('twistOverlay');
+  const twistText = document.getElementById('twistText');
+  const twistEmoji = document.getElementById('twistEmoji');
+  const summaryContent = document.getElementById('summaryContent');
+  const flashOverlay = document.getElementById('flashOverlay');
+
+  twistOverlay.classList.add('show');
+  twistEmoji.textContent = '🧮';
+  twistText.textContent = 'กำลังรวมคะแนนทั้งหมด...';
+  await sleep(1300);
+
+  // fake dramatic near-miss number, always a bit lower than the real score
+  const fakeTotal = Math.max(0, Math.round(summary.total_score - (3 + Math.random() * 10)));
+  twistOverlay.classList.add('twist-fake');
+  twistEmoji.textContent = '😯';
+  twistText.innerHTML = `เอ๊ะ!? คะแนนรวมคือ<br><span class="twist-fake-number">${fakeTotal}</span> ?`;
+  await sleep(1600);
+
+  twistEmoji.textContent = '⏳';
+  twistText.textContent = 'รอสักครู่นะ...กำลังตรวจทานอีกครั้ง';
+  await sleep(1100);
+
+  // flash + flip reveal
+  flashOverlay.classList.add('flash');
+  await sleep(180);
+  flashOverlay.classList.remove('flash');
+
+  twistOverlay.classList.remove('show', 'twist-fake');
+  summaryContent.classList.add('show');
+
+  await countUp(document.getElementById('totalScore'), summary.total_score, 900);
+  document.getElementById('totalPercent').textContent = `${summary.percent}%`;
 }
 
 function formatScore(v) {

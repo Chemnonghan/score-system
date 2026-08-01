@@ -22,8 +22,10 @@
         <option value="">-- เลือกชั้นเรียน --</option>
       </select>
 
-      <label for="numberInput">เลขที่</label>
-      <input type="number" id="numberInput" min="1" placeholder="เช่น 12" required>
+      <label for="queryInput">เลขที่ หรือ ชื่อ-สกุล</label>
+      <input type="text" id="queryInput" placeholder="เช่น 12 หรือ สมชาย ใจดี" required>
+
+      <div id="matchList" class="match-list"></div>
 
       <button type="submit" id="submitBtn">
         <span>ดูผลคะแนน</span>
@@ -54,12 +56,19 @@
     <div id="subjectsList" class="subjects-list"></div>
 
     <div class="summary-box" id="summaryBox">
-      <div class="summary-label">คะแนนรวม</div>
-      <div class="summary-value">
-        <span id="totalScore" class="rolling-number">0</span> / <span id="totalFull">0</span>
+      <div class="twist-overlay" id="twistOverlay">
+        <div class="twist-emoji" id="twistEmoji">🤔</div>
+        <div class="twist-text" id="twistText">กำลังรวมคะแนนทั้งหมด...</div>
       </div>
-      <div class="summary-percent" id="totalPercent">0%</div>
+      <div class="summary-content" id="summaryContent">
+        <div class="summary-label">คะแนนรวม</div>
+        <div class="summary-value">
+          <span id="totalScore" class="rolling-number">0</span> / <span id="totalFull">0</span>
+        </div>
+        <div class="summary-percent" id="totalPercent">0%</div>
+      </div>
     </div>
+    <div class="flash-overlay" id="flashOverlay"></div>
 
     <div class="encourage-box" id="encourageBox">
       <div class="encourage-emoji" id="encourageEmoji">✨</div>

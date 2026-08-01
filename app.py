@@ -25,25 +25,52 @@ def api_classes():
 @app.route("/api/search")
 def api_search():
     class_name = (request.args.get("class_name") or "").strip()
-    number = request.args.get("number")
+    number = (request.args.get("number") or "").strip()
+    name = (request.args.get("name") or "").strip()
 
-    if not class_name or not number:
-        return jsonify({"found": False, "message": "กรุณาระบุชั้นเรียนและเลขที่"}), 400
-
-    try:
-        number = int(number)
-    except ValueError:
-        return jsonify({"found": False, "message": "เลขที่ต้องเป็นตัวเลข"}), 400
+    if not class_name or (not number and not name):
+        return jsonify({"found": False, "message": "กรุณาระบุชั้นเรียน และเลขที่หรือชื่อ-สกุล"}), 400
 
     conn = get_conn()
-    student = conn.execute(
-        "SELECT id, class_name, number, full_name FROM students WHERE class_name=? AND number=?",
-        (class_name, number),
-    ).fetchone()
+
+    if number:
+        try:
+            number_int = int(number)
+        except ValueError:
+            conn.close()
+            return jsonify({"found": False, "message": "เลขที่ต้องเป็นตัวเลข"}), 400
+
+        student = conn.execute(
+            "SELECT id, class_name, number, full_name FROM students WHERE class_name=? AND number=?",
+            (class_name, number_int),
+        ).fetchone()
+    else:
+        matches = conn.execute(
+            "SELECT id, class_name, number, full_name FROM students "
+            "WHERE class_name=? AND full_name LIKE ? ORDER BY number",
+            (class_name, f"%{name}%"),
+        ).fetchall()
+
+        if len(matches) == 0:
+            student = None
+        elif len(matches) == 1:
+            student = matches[0]
+        else:
+            conn.close()
+            return jsonify(
+                {
+                    "found": False,
+                    "multiple": True,
+                    "message": "พบชื่อที่คล้ายกันหลายคน กรุณาเลือกหรือระบุเลขที่แทน",
+                    "matches": [
+                        {"number": m["number"], "full_name": m["full_name"]} for m in matches
+                    ],
+                }
+            ), 409
 
     if not student:
         conn.close()
-        return jsonify({"found": False, "message": "ไม่พบข้อมูลนักเรียน กรุณาตรวจสอบชั้นเรียนและเลขที่อีกครั้ง"}), 404
+        return jsonify({"found": False, "message": "ไม่พบข้อมูลนักเรียน กรุณาตรวจสอบชั้นเรียน เลขที่ หรือชื่อ-สกุลอีกครั้ง"}), 404
 
     score_rows = conn.execute(
         """

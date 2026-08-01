@@ -100,6 +100,26 @@ button#submitBtn:active { transform: translateY(0); }
   min-height: 20px;
 }
 
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.match-item {
+  text-align: left;
+  padding: 10px 14px;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  background: #fafafa;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.match-item:hover { border-color: var(--primary); background: #f2f0ff; }
+
 /* ---- loading screen ---- */
 .loading-box { text-align: center; color: #fff; }
 .spinner {
@@ -169,6 +189,12 @@ button#submitBtn:active { transform: translateY(0); }
   font-variant-numeric: tabular-nums;
 }
 .subject-score.rolling { color: #bbb; }
+.subject-score.pop { animation: scorePop 0.4s ease; }
+@keyframes scorePop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); color: var(--accent); }
+  100% { transform: scale(1); }
+}
 
 .subject-bar-wrap {
   flex: 1;
@@ -187,16 +213,94 @@ button#submitBtn:active { transform: translateY(0); }
 }
 
 .summary-box {
+  position: relative;
   text-align: center;
   padding: 20px;
+  min-height: 96px;
   border-radius: 18px;
   background: linear-gradient(135deg, #6C5CE7, #4834D4);
   color: #fff;
   margin-bottom: 18px;
+  overflow: hidden;
 }
 .summary-label { font-size: 13px; opacity: 0.85; margin-bottom: 6px; }
 .summary-value { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .summary-percent { font-size: 15px; opacity: 0.9; margin-top: 4px; font-weight: 600; }
+
+.summary-content {
+  opacity: 0;
+  transform: scale(0.85) rotateY(90deg);
+}
+.summary-content.show {
+  animation: flipReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes flipReveal {
+  0% { opacity: 0; transform: scale(0.85) rotateY(90deg); }
+  60% { opacity: 1; transform: scale(1.08) rotateY(0deg); }
+  100% { opacity: 1; transform: scale(1) rotateY(0deg); }
+}
+
+.twist-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.twist-overlay.show { opacity: 1; pointer-events: auto; }
+.twist-overlay.twist-fake {
+  background: linear-gradient(135deg, #d63031, #e17055);
+  animation: twistShake 0.5s ease;
+}
+@keyframes twistShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px) rotate(-1deg); }
+  40% { transform: translateX(6px) rotate(1deg); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.twist-emoji {
+  font-size: 34px;
+  animation: twistPulse 1s ease-in-out infinite;
+}
+@keyframes twistPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.twist-text {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.twist-fake-number {
+  font-size: 26px;
+  font-weight: 800;
+  text-decoration: line-through;
+  opacity: 0.9;
+}
+
+.flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+.flash-overlay.flash {
+  animation: flashPop 0.18s ease;
+}
+@keyframes flashPop {
+  0% { opacity: 0; }
+  40% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
 
 .encourage-box {
   text-align: center;
