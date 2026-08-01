@@ -180,7 +180,6 @@ async function renderResult(data) {
     row.style.animationDelay = `${idx * 0.05}s`;
     row.innerHTML = `
       <div class="subject-name">${s.subject}</div>
-      <div class="subject-bar-wrap"><div class="subject-bar"></div></div>
       <div class="subject-score rolling">--</div>
     `;
     list.appendChild(row);
@@ -191,7 +190,6 @@ async function renderResult(data) {
   for (let i = 0; i < data.subjects.length; i++) {
     const s = data.subjects[i];
     const scoreEl = rows[i].querySelector('.subject-score');
-    const barEl = rows[i].querySelector('.subject-bar');
     const digitLen = String(Math.round(s.full_score)).length;
 
     const spinDuration = 2900; // long suspenseful spin per subject
@@ -212,11 +210,10 @@ async function renderResult(data) {
       frame();
     });
 
-    // reveal the real number and fill the bar together, right when the spin stops
+    // reveal the real number right when the spin stops
     scoreEl.textContent = formatScore(s.score);
     scoreEl.classList.remove('rolling');
     scoreEl.classList.add('pop');
-    barEl.style.width = `${Math.min(100, (s.score / s.full_score) * 100)}%`;
     await sleep(450);
   }
 

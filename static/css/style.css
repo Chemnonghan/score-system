@@ -196,22 +196,6 @@ button#submitBtn:active { transform: translateY(0); }
   100% { transform: scale(1); }
 }
 
-.subject-bar-wrap {
-  flex: 1;
-  margin: 0 14px;
-  height: 6px;
-  background: #eee;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.subject-bar {
-  height: 100%;
-  width: 0%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--primary), var(--accent));
-  transition: width 0.4s ease;
-}
-
 .summary-box {
   position: relative;
   text-align: center;
