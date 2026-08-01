@@ -215,13 +215,18 @@ async function renderResult(data) {
     scoreEl.textContent = formatScore(s.score);
     scoreEl.classList.remove('rolling');
     scoreEl.classList.add('pop');
-    await sleep(400); // let the number pop in first, then fill the bar right after
-    barEl.style.width = `${Math.min(100, (s.score / s.full_score) * 100)}%`;
-    await sleep(450);
+    await sleep(450); // bar for this subject stays hidden until after the total score is revealed
   }
 
   await sleep(400);
   await revealTotalWithTwist(data.summary);
+
+  // now that the total score is on screen, wait 1 second then fill in each subject's bar
+  await sleep(1000);
+  data.subjects.forEach((s, idx) => {
+    const barEl = rows[idx].querySelector('.subject-bar');
+    barEl.style.width = `${Math.min(100, (s.score / s.full_score) * 100)}%`;
+  });
 
   spawnConfetti(data.summary.percent >= 60 ? 70 : 25);
 
