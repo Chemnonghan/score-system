@@ -63,7 +63,7 @@ body {
 
 form { text-align: left; }
 label { display: block; font-size: 13px; font-weight: 600; color: #555; margin: 14px 0 6px; }
-select, input[type="number"] {
+select, input[type="number"], input[type="text"] {
   width: 100%;
   padding: 12px 14px;
   border: 2px solid #eee;
@@ -74,6 +74,14 @@ select, input[type="number"] {
   background: #fafafa;
 }
 select:focus, input:focus { border-color: var(--primary); background: #fff; }
+select.locked {
+  background: #f2f0ff;
+  border-color: var(--primary);
+  color: var(--primary-dark);
+  font-weight: 700;
+  opacity: 1;
+  -webkit-text-fill-color: var(--primary-dark);
+}
 
 button#submitBtn {
   margin-top: 24px;

@@ -52,6 +52,17 @@ async function loadClasses() {
       opt.textContent = c;
       classSelect.appendChild(opt);
     });
+
+    // allow deep-linking straight to a class via ?class=ม.1/1 — pre-selects
+    // the dropdown and locks it so students don't need to pick it themselves
+    const params = new URLSearchParams(window.location.search);
+    const presetClass = params.get('class');
+    if (presetClass && classes.includes(presetClass)) {
+      classSelect.value = presetClass;
+      classSelect.disabled = true;
+      classSelect.classList.add('locked');
+      queryInput.focus();
+    }
   } catch (e) {
     console.error('โหลดรายชื่อชั้นเรียนไม่สำเร็จ', e);
   }
