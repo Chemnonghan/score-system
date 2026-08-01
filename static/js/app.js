@@ -212,19 +212,23 @@ async function renderResult(data) {
       frame();
     });
 
-    scoreEl.textContent = formatScore(s.score);
-    scoreEl.classList.remove('rolling');
-    scoreEl.classList.add('pop');
-    await sleep(450); // bar for this subject stays hidden until after the total score is revealed
+    // keep the number frozen on a random value (still "rolling") — the real
+    // number is revealed later, together with the bar
+    await sleep(450);
   }
 
   await sleep(400);
   await revealTotalWithTwist(data.summary);
 
-  // now that the total score is on screen, wait 1 second then fill in each subject's bar
+  // now that the total score is on screen, wait 1 second then reveal each
+  // subject's real number and fill its bar at the same time
   await sleep(1000);
   data.subjects.forEach((s, idx) => {
+    const scoreEl = rows[idx].querySelector('.subject-score');
     const barEl = rows[idx].querySelector('.subject-bar');
+    scoreEl.textContent = formatScore(s.score);
+    scoreEl.classList.remove('rolling');
+    scoreEl.classList.add('pop');
     barEl.style.width = `${Math.min(100, (s.score / s.full_score) * 100)}%`;
   });
 
