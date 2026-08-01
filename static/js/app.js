@@ -177,47 +177,15 @@ async function renderResult(data) {
   data.subjects.forEach((s, idx) => {
     const row = document.createElement('div');
     row.className = 'subject-row';
-    row.style.animationDelay = `${idx * 0.05}s`;
-    row.innerHTML = `
-      <div class="subject-name">${s.subject}</div>
-      <div class="subject-score rolling">--</div>
-    `;
+    row.style.animationDelay = `${idx * 0.15}s`;
+    row.innerHTML = `<div class="subject-name">${s.subject}</div>`;
     list.appendChild(row);
     rows.push(row);
   });
 
-  // slot-machine reveal, one subject at a time — slow, decelerating spin for maximum suspense
-  for (let i = 0; i < data.subjects.length; i++) {
-    const s = data.subjects[i];
-    const scoreEl = rows[i].querySelector('.subject-score');
-    const digitLen = String(Math.round(s.full_score)).length;
+  // give the subject list a moment to fade in before building suspense for the total
+  await sleep(data.subjects.length * 150 + 900);
 
-    const spinDuration = 2900; // long suspenseful spin per subject
-    const startTime = Date.now();
-    await new Promise(resolve => {
-      function frame() {
-        const elapsed = Date.now() - startTime;
-        scoreEl.textContent = randomDigits(digitLen);
-        if (elapsed > spinDuration) {
-          resolve();
-          return;
-        }
-        // ease-out: spin fast at first, slow dramatically toward the end
-        const progress = elapsed / spinDuration;
-        const delay = 40 + Math.pow(progress, 3) * 260;
-        setTimeout(frame, delay);
-      }
-      frame();
-    });
-
-    // reveal the real number right when the spin stops
-    scoreEl.textContent = formatScore(s.score);
-    scoreEl.classList.remove('rolling');
-    scoreEl.classList.add('pop');
-    await sleep(450);
-  }
-
-  await sleep(400);
   await revealTotalWithTwist(data.summary);
 
   spawnConfetti(data.summary.percent >= 60 ? 70 : 25);
