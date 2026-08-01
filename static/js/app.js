@@ -215,6 +215,7 @@ async function renderResult(data) {
     scoreEl.textContent = formatScore(s.score);
     scoreEl.classList.remove('rolling');
     scoreEl.classList.add('pop');
+    await sleep(400); // let the number pop in first, then fill the bar right after
     barEl.style.width = `${Math.min(100, (s.score / s.full_score) * 100)}%`;
     await sleep(450);
   }
