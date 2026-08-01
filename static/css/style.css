@@ -1,0 +1,239 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #6C5CE7;
+  --primary-dark: #4834D4;
+  --accent: #FDCB6E;
+  --good: #00B894;
+  --warn: #FF7675;
+  --bg1: #6C5CE7;
+  --bg2: #A29BFE;
+}
+
+body {
+  font-family: 'Segoe UI', 'Sarabun', 'Tahoma', sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2));
+  overflow-x: hidden;
+  position: relative;
+}
+
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.15) 0%, transparent 25%),
+    radial-gradient(circle at 85% 80%, rgba(255,255,255,0.12) 0%, transparent 25%),
+    radial-gradient(circle at 90% 10%, rgba(255,255,255,0.1) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen {
+  display: none;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+}
+.screen.active { display: flex; }
+
+/* ---- search card ---- */
+.card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px 32px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  text-align: center;
+  animation: popIn 0.5s ease;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.logo { font-size: 48px; margin-bottom: 8px; }
+.card h1 { font-size: 22px; color: #2d2d2d; margin-bottom: 6px; }
+.subtitle { color: #888; font-size: 14px; margin-bottom: 24px; }
+
+form { text-align: left; }
+label { display: block; font-size: 13px; font-weight: 600; color: #555; margin: 14px 0 6px; }
+select, input[type="number"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fafafa;
+}
+select:focus, input:focus { border-color: var(--primary); background: #fff; }
+
+button#submitBtn {
+  margin-top: 24px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 10px 25px rgba(108,92,231,0.4);
+}
+button#submitBtn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(108,92,231,0.5); }
+button#submitBtn:active { transform: translateY(0); }
+
+.error-msg {
+  margin-top: 16px;
+  color: var(--warn);
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 20px;
+}
+
+/* ---- loading screen ---- */
+.loading-box { text-align: center; color: #fff; }
+.spinner {
+  width: 70px; height: 70px;
+  border: 6px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loadingText { font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
+
+/* ---- result screen ---- */
+.result-card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 36px 28px 40px;
+  max-width: 480px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+  animation: popIn 0.5s ease;
+}
+
+.back-btn {
+  position: absolute;
+  top: 18px; left: 18px;
+  border: none;
+  background: #f2f2f2;
+  color: #555;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.back-btn:hover { background: #e6e6e6; }
+
+.student-header { text-align: center; margin-bottom: 20px; margin-top: 10px; }
+.avatar { font-size: 46px; }
+.student-header h2 { font-size: 22px; color: #2d2d2d; margin-top: 6px; }
+.student-header p { color: #999; font-size: 14px; margin-top: 2px; }
+
+.subjects-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+.subject-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f8fb;
+  border-radius: 14px;
+  padding: 12px 16px;
+  opacity: 0;
+  transform: translateX(-15px);
+  animation: slideIn 0.4s forwards;
+}
+@keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+
+.subject-name { font-weight: 600; color: #444; font-size: 14px; }
+.subject-score {
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--primary-dark);
+  min-width: 70px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.subject-score.rolling { color: #bbb; }
+
+.subject-bar-wrap {
+  flex: 1;
+  margin: 0 14px;
+  height: 6px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.subject-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 0.8s ease;
+}
+
+.summary-box {
+  text-align: center;
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #6C5CE7, #4834D4);
+  color: #fff;
+  margin-bottom: 18px;
+}
+.summary-label { font-size: 13px; opacity: 0.85; margin-bottom: 6px; }
+.summary-value { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.summary-percent { font-size: 15px; opacity: 0.9; margin-top: 4px; font-weight: 600; }
+
+.encourage-box {
+  text-align: center;
+  padding: 18px;
+  border-radius: 16px;
+  background: #FFF7E6;
+  opacity: 0;
+  transform: translateY(10px);
+}
+.encourage-box.show {
+  animation: fadeUp 0.6s forwards;
+}
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+.encourage-emoji { font-size: 34px; margin-bottom: 8px; }
+.encourage-text { font-size: 15px; color: #7a5c00; font-weight: 700; line-height: 1.5; }
+
+/* confetti */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  opacity: 0.9;
+  animation: fall linear forwards;
+}
+@keyframes fall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+}
+
+@media (max-width: 480px) {
+  .subject-name { font-size: 12.5px; }
+  .subject-score { font-size: 17px; }
+}

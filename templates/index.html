@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบแจ้งคะแนนผลการสอบ</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="bg-decor"></div>
+
+<div id="searchScreen" class="screen active">
+  <div class="card">
+    <div class="logo">🎓</div>
+    <h1>ระบบแจ้งคะแนนผลการสอบ</h1>
+    <p class="subtitle">กรอกข้อมูลของคุณเพื่อดูผลคะแนน</p>
+
+    <form id="searchForm">
+      <label for="classSelect">ชั้นเรียน</label>
+      <select id="classSelect" required>
+        <option value="">-- เลือกชั้นเรียน --</option>
+      </select>
+
+      <label for="numberInput">เลขที่</label>
+      <input type="number" id="numberInput" min="1" placeholder="เช่น 12" required>
+
+      <button type="submit" id="submitBtn">
+        <span>ดูผลคะแนน</span>
+      </button>
+    </form>
+
+    <p id="errorMsg" class="error-msg"></p>
+  </div>
+</div>
+
+<div id="loadingScreen" class="screen">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p id="loadingText">กำลังค้นหาข้อมูล...</p>
+  </div>
+</div>
+
+<div id="resultScreen" class="screen">
+  <div class="confetti-container" id="confettiContainer"></div>
+  <div class="result-card">
+    <button class="back-btn" id="backBtn">&larr; ค้นหาใหม่</button>
+    <div class="student-header">
+      <div class="avatar">🧑‍🎓</div>
+      <h2 id="studentName">-</h2>
+      <p id="studentClass">-</p>
+    </div>
+
+    <div id="subjectsList" class="subjects-list"></div>
+
+    <div class="summary-box" id="summaryBox">
+      <div class="summary-label">คะแนนรวม</div>
+      <div class="summary-value">
+        <span id="totalScore" class="rolling-number">0</span> / <span id="totalFull">0</span>
+      </div>
+      <div class="summary-percent" id="totalPercent">0%</div>
+    </div>
+
+    <div class="encourage-box" id="encourageBox">
+      <div class="encourage-emoji" id="encourageEmoji">✨</div>
+      <div class="encourage-text" id="encourageText"></div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
