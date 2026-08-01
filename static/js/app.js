@@ -194,7 +194,7 @@ async function renderResult(data) {
     const barEl = rows[i].querySelector('.subject-bar');
     const digitLen = String(Math.round(s.full_score)).length;
 
-    const spinDuration = 1900; // long suspenseful spin per subject
+    const spinDuration = 2900; // long suspenseful spin per subject
     const startTime = Date.now();
     await new Promise(resolve => {
       function frame() {
