@@ -278,6 +278,12 @@ button#submitBtn:active { transform: translateY(0); }
   font-weight: 700;
   line-height: 1.5;
 }
+.twist-spin-number {
+  font-size: 32px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+}
 .twist-fake-number {
   font-size: 26px;
   font-weight: 800;

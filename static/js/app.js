@@ -212,25 +212,16 @@ async function renderResult(data) {
       frame();
     });
 
-    // keep the number frozen on a random value (still "rolling") — the real
-    // number is revealed later, together with the bar
+    // reveal the real number and fill the bar together, right when the spin stops
+    scoreEl.textContent = formatScore(s.score);
+    scoreEl.classList.remove('rolling');
+    scoreEl.classList.add('pop');
+    barEl.style.width = `${Math.min(100, (s.score / s.full_score) * 100)}%`;
     await sleep(450);
   }
 
   await sleep(400);
   await revealTotalWithTwist(data.summary);
-
-  // now that the total score is on screen, wait 1 second then reveal each
-  // subject's real number and fill its bar at the same time
-  await sleep(1000);
-  data.subjects.forEach((s, idx) => {
-    const scoreEl = rows[idx].querySelector('.subject-score');
-    const barEl = rows[idx].querySelector('.subject-bar');
-    scoreEl.textContent = formatScore(s.score);
-    scoreEl.classList.remove('rolling');
-    scoreEl.classList.add('pop');
-    barEl.style.width = `${Math.min(100, (s.score / s.full_score) * 100)}%`;
-  });
 
   spawnConfetti(data.summary.percent >= 60 ? 70 : 25);
 
@@ -247,13 +238,33 @@ async function revealTotalWithTwist(summary) {
   const twistOverlay = document.getElementById('twistOverlay');
   const twistText = document.getElementById('twistText');
   const twistEmoji = document.getElementById('twistEmoji');
+  const twistSpinNumber = document.getElementById('twistSpinNumber');
   const summaryContent = document.getElementById('summaryContent');
   const flashOverlay = document.getElementById('flashOverlay');
 
   twistOverlay.classList.add('show');
-  twistEmoji.textContent = '🧮';
+  twistEmoji.textContent = '🎰';
   twistText.textContent = 'กำลังรวมคะแนนทั้งหมด...';
-  await sleep(1300);
+
+  // spin the total up and down for 2 seconds, slowing down until it stops
+  const totalDigitLen = String(Math.round(summary.total_full)).length;
+  const spinDuration = 2000;
+  const spinStart = Date.now();
+  await new Promise(resolve => {
+    function frame() {
+      const elapsed = Date.now() - spinStart;
+      twistSpinNumber.textContent = randomDigits(totalDigitLen);
+      if (elapsed > spinDuration) {
+        resolve();
+        return;
+      }
+      const progress = elapsed / spinDuration;
+      const delay = 45 + Math.pow(progress, 3) * 280; // ease-out, dramatic slow-down
+      setTimeout(frame, delay);
+    }
+    frame();
+  });
+  twistSpinNumber.textContent = '';
 
   // fake dramatic near-miss number, always a bit lower than the real score
   const fakeTotal = Math.max(0, Math.round(summary.total_score - (3 + Math.random() * 10)));
